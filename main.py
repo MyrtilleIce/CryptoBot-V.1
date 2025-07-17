@@ -4,6 +4,7 @@ import hashlib
 import requests
 import json
 import os
+import base64
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,9 +21,12 @@ def get_timestamp():
     return str(int(time.time() * 1000))
 
 def sign(method, path, timestamp, body=""):
-    pre_hash = f"{timestamp}{API_KEY}{method.upper()}{path}{body}"
-    signature = hmac.new(API_SECRET.encode(), pre_hash.encode(), hashlib.sha256).hexdigest()
-    return signature
+    """Return BASE64-encoded HMAC signature for the request."""
+    pre_hash = f"{timestamp}{method.upper()}{path}{body}"
+    digest = hmac.new(
+        API_SECRET.encode(), pre_hash.encode(), hashlib.sha256
+    ).digest()
+    return base64.b64encode(digest).decode()
 
 def get_headers(method, path, body=""):
     timestamp = get_timestamp()
